@@ -1,25 +1,25 @@
 package com.posthaste.shipment;
 
-import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import com.easypost.model.Shipment;
 import com.easypost.service.EasyPostClient;
+import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 
 
-@Component
+@RestController
+@RequestMapping("/shipment")
 public class QuotesEndpoint {
     @Value("${easypost.api.key}")
     private String easypostApiKey;
 
 
     @PostMapping("/quotes")
-    @ResponseBody
     @SneakyThrows
     public Shipment quotes(@RequestBody QuotesRequest quotesRequest) {
         EasyPostClient client = new EasyPostClient(easypostApiKey);
