@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class InferenceEndpoint {
     private final InferenceService inferenceService;
 
-    @PostMapping(value = "/inference", consumes = "text/plain")
-    public PredictionResponse quotes(@RequestBody String prompt) {
-        return inferenceService.predict(prompt);
+    @PostMapping(value = "/inference")
+    public PredictionResponse quotes(@RequestBody PredictionRequest request) {
+        return inferenceService.predict(request.prompt());
     }
 }
