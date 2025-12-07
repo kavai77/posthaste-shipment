@@ -1,13 +1,19 @@
-package com.posthaste.shipment;
+package com.posthaste.ai;
 
-public record QuotesRequest(
+import java.math.BigDecimal;
+
+public record PredictionResponse(
         Address shipper,
         Address recipient,
-        String weight,
-        String length,
-        String width,
-        String height,
+        MeasuredValue weight,
+        Dimensions dimensions,
         String item) {
+    public record MeasuredValue(BigDecimal value, String unit) {
+    }
+
+    public record Dimensions(MeasuredValue length, MeasuredValue width, MeasuredValue height) {
+    }
+
     public record Address(String name,
                           String postcode,
                           String city,

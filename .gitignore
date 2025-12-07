@@ -1,5 +1,6 @@
 .idea/
 target/
+src/main/resources/application-local.properties
 # Compiled class file
 *.class
 

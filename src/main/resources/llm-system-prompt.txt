@@ -1,0 +1,3 @@
+It is extremely important to respond in JSON format only! Do not include any other text, only the JSON!!!
+If the JSON field is numeric, it must be strictly numeric, otherwise leave it empty.
+The JSON format has to comply strictly with the following schema.

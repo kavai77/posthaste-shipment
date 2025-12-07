@@ -23,25 +23,24 @@ public class QuotesEndpoint {
         EasyPostClient client = new EasyPostClient(easypostApiKey);
 
         var toAddressMap = new HashMap<String, Object>();
-        toAddressMap.put("name", quotesRequest.recipient());
-        toAddressMap.put("street1", quotesRequest.address());
-        toAddressMap.put("city", quotesRequest.city());
-        toAddressMap.put("state", quotesRequest.state());
-        toAddressMap.put("country", quotesRequest.country());
-        toAddressMap.put("phone", quotesRequest.phone());
-        toAddressMap.put("email", quotesRequest.email());
-        toAddressMap.put("zip", quotesRequest.postcode());
+        toAddressMap.put("name", quotesRequest.recipient().name());
+        toAddressMap.put("street1", quotesRequest.recipient().address());
+        toAddressMap.put("city", quotesRequest.recipient().city());
+        toAddressMap.put("state", quotesRequest.recipient().state());
+        toAddressMap.put("zip", quotesRequest.recipient().postcode());
+        toAddressMap.put("country", quotesRequest.recipient().country());
+        toAddressMap.put("phone", quotesRequest.recipient().phone());
+        toAddressMap.put("email", quotesRequest.recipient().email());
 
         var fromAddressMap = new HashMap<String, Object>();
-        fromAddressMap.put("name", "EasyPost");
-        fromAddressMap.put("street1", "417 Montgomery Street");
-        fromAddressMap.put("street2", "5th Floor");
-        fromAddressMap.put("city", "San Francisco");
-        fromAddressMap.put("state", "CA");
-        fromAddressMap.put("zip", "94104");
-        fromAddressMap.put("country", "US");
-        fromAddressMap.put("phone", "4153334445");
-        fromAddressMap.put("email", "support@easypost.com");
+        fromAddressMap.put("name", quotesRequest.shipper().name());
+        fromAddressMap.put("street1", quotesRequest.shipper().address());
+        fromAddressMap.put("city", quotesRequest.shipper().city());
+        fromAddressMap.put("state", quotesRequest.shipper().state());
+        fromAddressMap.put("zip", quotesRequest.shipper().postcode());
+        fromAddressMap.put("country", quotesRequest.shipper().country());
+        fromAddressMap.put("phone", quotesRequest.shipper().phone());
+        fromAddressMap.put("email", quotesRequest.shipper().email());
 
         var parcelMap = new HashMap<String, Object>();
         parcelMap.put("length", Float.parseFloat(quotesRequest.length()));
