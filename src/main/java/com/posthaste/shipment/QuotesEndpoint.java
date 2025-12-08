@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 
@@ -25,25 +26,8 @@ public class QuotesEndpoint {
     public Shipment quotes(@RequestBody QuotesRequest quotesRequest) {
         EasyPostClient client = new EasyPostClient(easypostApiKey);
 
-        var toAddressMap = new HashMap<String, Object>();
-        toAddressMap.put("name", quotesRequest.recipient().name());
-        toAddressMap.put("street1", quotesRequest.recipient().address());
-        toAddressMap.put("city", quotesRequest.recipient().city());
-        toAddressMap.put("state", quotesRequest.recipient().state());
-        toAddressMap.put("zip", quotesRequest.recipient().postcode());
-        toAddressMap.put("country", quotesRequest.recipient().country());
-        toAddressMap.put("phone", quotesRequest.recipient().phone());
-        toAddressMap.put("email", quotesRequest.recipient().email());
-
-        var fromAddressMap = new HashMap<String, Object>();
-        fromAddressMap.put("name", quotesRequest.shipper().name());
-        fromAddressMap.put("street1", quotesRequest.shipper().address());
-        fromAddressMap.put("city", quotesRequest.shipper().city());
-        fromAddressMap.put("state", quotesRequest.shipper().state());
-        fromAddressMap.put("zip", quotesRequest.shipper().postcode());
-        fromAddressMap.put("country", quotesRequest.shipper().country());
-        fromAddressMap.put("phone", quotesRequest.shipper().phone());
-        fromAddressMap.put("email", quotesRequest.shipper().email());
+        var fromAddressMap = createAddressMap(quotesRequest.shipper());
+        var toAddressMap = createAddressMap(quotesRequest.recipient());
 
         var parcelMap = new HashMap<String, Object>();
         parcelMap.put("length", getDimension(quotesRequest, Dimensions::length));
@@ -60,6 +44,22 @@ public class QuotesEndpoint {
         params.put("customs_info", customsInfoMap);
 
         return client.shipment.create(params);
+    }
+
+    private Map<String, Object> createAddressMap(QuotesRequest.Address address) {
+        if (address == null) {
+            return Map.of();
+        }
+        var addressMap = new HashMap<String, Object>();
+        addressMap.put("name", address.name());
+        addressMap.put("street1", address.address());
+        addressMap.put("city", address.city());
+        addressMap.put("state", address.state());
+        addressMap.put("zip", address.postcode());
+        addressMap.put("country", address.country());
+        addressMap.put("phone", address.phone());
+        addressMap.put("email", address.email());
+        return addressMap;
     }
 
     private Float getDimension(QuotesRequest quotesRequest, Function<Dimensions, MeasuredValue> function) {
