@@ -1,9 +1,9 @@
 package com.posthaste.ai;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -25,14 +25,26 @@ public class InferenceService {
 
     public static final String DATA_PREFIX = "data: ";
     public static final int MAX_TOKENS = 4092;
+    public static final int MAX_RETRY_COUNT = 3;
 
     @Value("${replicate.bearer.auth}")
     private final String replicateBearerAuth;
     private final ObjectMapper objectMapper;
     private final String systemPrompt;
 
-    @SneakyThrows
-    public PredictionResponse predict(String input) {
+    public PredictionResponse predict(String input) throws Exception {
+        Exception lastException = null;
+        for (var retried = 0; retried < MAX_RETRY_COUNT; retried++) {
+            try {
+                return objectMapper.readValue(generateResponse(input), PredictionResponse.class);
+            } catch (RuntimeException | JsonProcessingException e) {
+                lastException = e;
+            }
+        }
+        throw lastException;
+    }
+
+    private String generateResponse(String input) {
         checkArgument(isNotBlank(input));
         checkArgument(input.length() <= 1000);
 
@@ -57,11 +69,7 @@ public class InferenceService {
                         while (!(line = bufferedReader.readLine()).equals("event: done")) {
                             if (line.startsWith(DATA_PREFIX)) {
                                 String data = line.substring(DATA_PREFIX.length());
-                                if (data.isEmpty()) {
-                                    if (!sb.isEmpty()) {
-                                        sb.append("\n");
-                                    }
-                                } else {
+                                if (!data.isEmpty()) {
                                     sb.append(data);
                                 }
                             }
@@ -75,7 +83,7 @@ public class InferenceService {
         var content = sb.toString();
         var firstBracket = content.indexOf('{');
         var lastBracket = content.lastIndexOf('}');
-        return objectMapper.readValue(content.substring(firstBracket, lastBracket + 1), PredictionResponse.class);
+        return content.substring(firstBracket, lastBracket + 1);
     }
 
     @Builder
