@@ -1,12 +1,12 @@
 package com.posthaste.shipment;
 
+import java.math.BigDecimal;
+
 public record QuotesRequest(
         Address shipper,
         Address recipient,
-        String weight,
-        String length,
-        String width,
-        String height,
+        MeasuredValue weight,
+        Dimensions dimensions,
         String item) {
     public record Address(String name,
                           String postcode,
@@ -16,5 +16,11 @@ public record QuotesRequest(
                           String country,
                           String phone,
                           String email) {
+    }
+
+    public record MeasuredValue(BigDecimal value, String unit) {
+    }
+
+    public record Dimensions(MeasuredValue length, MeasuredValue width, MeasuredValue height) {
     }
 }
