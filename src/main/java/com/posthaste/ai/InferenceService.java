@@ -21,7 +21,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @Component
 @RequiredArgsConstructor
 public class InferenceService {
-    public static final String MODEL = "https://api.replicate.com/v1/models/meta/meta-llama-3-8b-instruct/predictions";
+    public static final String MODEL = "https://api.replicate.com/v1/models/deepseek-ai/deepseek-v3.1/predictions";
 
     public static final String DATA_PREFIX = "data: ";
     public static final int MAX_TOKENS = 4092;
@@ -55,7 +55,7 @@ public class InferenceService {
 
         HttpEntity<PredictApiRequest> entity = new HttpEntity<>(PredictApiRequest.builder()
                 .input(PredictApiInputRequest.builder()
-                        .prompt(systemPrompt + input)
+                        .prompt(systemPrompt.replace("{{user_prompt}}", input))
                         .max_tokens(MAX_TOKENS)
                         .build())
                 .build(), headers);
