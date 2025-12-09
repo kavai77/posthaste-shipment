@@ -46,7 +46,7 @@ public class InferenceService {
 
     private String generateResponse(String input) {
         checkArgument(isNotBlank(input));
-        checkArgument(input.length() <= 1000);
+        checkArgument(input.length() <= 10000);
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
