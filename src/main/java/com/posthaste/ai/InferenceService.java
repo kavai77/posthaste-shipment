@@ -33,6 +33,8 @@ public class InferenceService {
     private final String systemPrompt;
 
     public PredictionResponse predict(String input) throws Exception {
+        checkArgument(isNotBlank(input));
+        checkArgument(input.length() <= 10000);
         Exception lastException = null;
         for (var retried = 0; retried < MAX_RETRY_COUNT; retried++) {
             try {
@@ -45,13 +47,9 @@ public class InferenceService {
     }
 
     private String generateResponse(String input) {
-        checkArgument(isNotBlank(input));
-        checkArgument(input.length() <= 10000);
-
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(replicateBearerAuth);
-        PredictApiRequest.builder().build();
 
         HttpEntity<PredictApiRequest> entity = new HttpEntity<>(PredictApiRequest.builder()
                 .input(PredictApiInputRequest.builder()
