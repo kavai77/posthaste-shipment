@@ -7,7 +7,9 @@ public record QuotesRequest(
         Address recipient,
         MeasuredValue weight,
         Dimensions dimensions,
-        String item) {
+        String item,
+        BigDecimal quantity,
+        BigDecimal value) {
     public record Address(String name,
                           String postcode,
                           String city,

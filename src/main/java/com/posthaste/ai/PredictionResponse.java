@@ -7,7 +7,9 @@ public record PredictionResponse(
         Address recipient,
         MeasuredValue weight,
         Dimensions dimensions,
-        String item) {
+        String item,
+        Integer quantity,
+        BigDecimal value) {
     public record MeasuredValue(BigDecimal value, String unit) {
     }
 

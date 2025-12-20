@@ -105,6 +105,12 @@
     },
     "item": {
       "type": "string"
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "value": {
+      "type": "number"
     }
   }
 }
