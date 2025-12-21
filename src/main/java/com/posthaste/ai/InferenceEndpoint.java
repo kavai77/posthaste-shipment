@@ -7,32 +7,45 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.function.Predicate.not;
 
 @RestController
 @RequiredArgsConstructor
 public class InferenceEndpoint {
     private final InferenceService inferenceService;
 
-    @PostMapping(value = "/inference")
+    @PostMapping(value = "/inference", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @SneakyThrows
-    public PredictionResponse infer(@RequestBody PredictionRequest request) {
-        return inferenceService.predict(request.prompt());
+    public PredictionResponse inference(
+            @RequestParam(value = "prompt", required = false) String prompt,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        String input = Stream.of(prompt, stripPdf(file))
+                .filter(Objects::nonNull)
+                .filter(not(String::isBlank))
+                .collect(Collectors.joining("\n"));
+        if (input.isEmpty()) {
+            throw new IllegalArgumentException("Empty input");
+        }
+        return inferenceService.predict(input);
     }
 
-    @PostMapping(value = "/inference-pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @SneakyThrows
-    public PredictionResponse documentUpload(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty() || !MediaType.APPLICATION_PDF_VALUE.equals(file.getContentType())) {
-            throw new IllegalArgumentException("File is empty or not a pdf file");
+    private String stripPdf(MultipartFile file) {
+        if (file == null || file.isEmpty() || !MediaType.APPLICATION_PDF_VALUE.equals(file.getContentType())) {
+            return null;
         }
         try (PDDocument document = Loader.loadPDF(file.getBytes())) {
             PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(document);
-            return inferenceService.predict(text);
+            return stripper.getText(document);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

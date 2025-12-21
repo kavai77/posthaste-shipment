@@ -1,0 +1,47 @@
+#POST https://api.posthaste.pro/shipment/quotes
+POST http://localhost:8080/quotes
+Content-Type: application/json
+
+{
+  "shipper": {
+    "name": "Mr. Smith",
+    "postcode": "11432",
+    "city": "New York",
+    "address": "50-32 154th Street",
+    "state": "NY",
+    "country": "United States",
+    "phone": "",
+    "email": ""
+  },
+  "recipient": {
+    "name": "Csaba Kavai",
+    "postcode": "1101",
+    "city": "Budapest",
+    "address": "Lajos út 12/A 2/4",
+    "state": "",
+    "country": "Hungary",
+    "phone": "06707028116",
+    "email": "test@posthaste.pro"
+  },
+  "weight": {
+    "value": 2.5,
+    "unit": "kg"
+  },
+  "dimensions": {
+    "length": {
+      "value": 30,
+      "unit": "cm"
+    },
+    "width": {
+      "value": 20,
+      "unit": "cm"
+    },
+    "height": {
+      "value": 10,
+      "unit": "cm"
+    }
+  },
+  "item": "laptop and a charger",
+  "value": 1000,
+  "quantity": 1
+}
