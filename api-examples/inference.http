@@ -1,9 +1,9 @@
-### empty: error
+### 1. EMPTY REQUEST responds with an error
 POST http://localhost:8080/inference
 #POST https://api.posthaste.pro/shipment/inference
 Content-Type: multipart/form-data; boundary=boundary
 
-### prompt
+### 2. REQUEST CONTAINS prompt only
 POST http://localhost:8080/inference
 #POST https://api.posthaste.pro/shipment/inference
 Content-Type: multipart/form-data; boundary=boundary
@@ -19,7 +19,7 @@ The shipment contains one laptop and a charger with a value of $1000.
 The recipient is Jane Smith his phone number is 6707028116. His email is test@posthaste.pro.
 --boundary--
 
-### PDF
+### 3. REQUEST CONTAINS PDF only
 POST http://localhost:8080/inference
 #POST https://api.posthaste.pro/shipment/inference
 Content-Type: multipart/form-data; boundary=boundary
@@ -31,9 +31,7 @@ Content-Type: application/pdf
 < /Users/4135664/Documents/Commercial-Invoice-Regular.pdf
 --boundary--
 
-<> 2025-12-21T074134.200.json
-
-### both prompt and PDF
+### 4. REQUEST CONTAINS BOTH prompt and PDF
 POST http://localhost:8080/inference
 #POST https://api.posthaste.pro/shipment/inference
 Content-Type: multipart/form-data; boundary=boundary
