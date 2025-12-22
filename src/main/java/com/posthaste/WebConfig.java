@@ -11,7 +11,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("http://localhost:[*]", "https://posthaste-pro-web.web.app", "https://*.posthaste.pro")
+                .allowedOriginPatterns("http://localhost:[*]", "https://posthaste-pro-web.web.app",
+                        "https://posthaste-pro-app.web.app", "https://*.posthaste.pro")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);
