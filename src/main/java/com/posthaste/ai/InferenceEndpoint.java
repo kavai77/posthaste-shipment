@@ -6,12 +6,15 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,6 +24,11 @@ import static java.util.function.Predicate.not;
 @RequiredArgsConstructor
 public class InferenceEndpoint {
     private final InferenceService inferenceService;
+
+    @GetMapping(value = "/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.of(Optional.of("OK"));
+    }
 
     @PostMapping(value = "/inference", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @SneakyThrows

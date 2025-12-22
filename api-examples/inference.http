@@ -1,6 +1,10 @@
+###
+GET http://localhost:8080/test
+
+
 ### 1. EMPTY REQUEST responds with an error
-POST http://localhost:8080/inference
-#POST https://api.posthaste.pro/shipment/inference
+#POST http://localhost:8080/inference
+POST https://api.posthaste.pro/shipment/inference
 Content-Type: multipart/form-data; boundary=boundary
 
 ### 2. REQUEST CONTAINS prompt only
