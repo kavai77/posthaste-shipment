@@ -2,6 +2,7 @@ package com.posthaste.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.posthaste.firebase.PromptRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -31,14 +33,31 @@ public class InferenceService {
     private final String replicateBearerAuth;
     private final ObjectMapper objectMapper;
     private final String systemPrompt;
+    private final PromptRepository promptRepository;
 
     public PredictionResponse predict(String input) throws Exception {
         checkArgument(isNotBlank(input));
         checkArgument(input.length() <= 10000);
         Exception lastException = null;
+        var savedPrediction = promptRepository.getPrediction(input);
         for (var retried = 0; retried < MAX_RETRY_COUNT; retried++) {
             try {
-                return objectMapper.readValue(generateResponse(input), PredictionResponse.class);
+                boolean returnedFromDb = retried == 0 && savedPrediction.isPresent();
+                String response = returnedFromDb
+                        ? savedPrediction.get()
+                        : generateResponse(input);
+                PredictionResponse predictionResponse = objectMapper.readValue(response, PredictionResponse.class);
+                if (!returnedFromDb) {
+                    promptRepository.savePrompt(PromptRepository.Prompt.builder()
+                            .prompt(input)
+                            .prediction(objectMapper.writeValueAsString(predictionResponse))
+                            .retryCount(retried)
+                            .generatedTime(new Date())
+                            .lastAccessTime(new Date())
+                            .accessCount(0)
+                            .build());
+                }
+                return predictionResponse;
             } catch (RuntimeException | JsonProcessingException e) {
                 lastException = e;
             }

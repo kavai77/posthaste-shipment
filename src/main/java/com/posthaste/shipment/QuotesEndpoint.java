@@ -4,6 +4,7 @@ import com.easypost.model.Shipment;
 import com.easypost.service.EasyPostClient;
 import com.posthaste.shipment.QuotesRequest.Dimensions;
 import com.posthaste.shipment.QuotesRequest.MeasuredValue;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,10 +20,10 @@ import java.util.function.Function;
 
 
 @RestController
+@RequiredArgsConstructor
 public class QuotesEndpoint {
     @Value("${easypost.api.key}")
-    private String easypostApiKey;
-
+    private final String easypostApiKey;
 
     @PostMapping("/quotes")
     @SneakyThrows
