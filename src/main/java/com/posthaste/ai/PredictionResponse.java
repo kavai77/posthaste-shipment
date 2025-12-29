@@ -5,15 +5,18 @@ import java.math.BigDecimal;
 public record PredictionResponse(
         Address shipper,
         Address recipient,
-        MeasuredValue weight,
+        MeasuredValueWeight weight,
         Dimensions dimensions,
         String item,
         Integer quantity,
         BigDecimal value) {
-    public record MeasuredValue(BigDecimal value, String unit) {
+    public record MeasuredValueWeight(BigDecimal value, WeightUnit unit) {
     }
 
-    public record Dimensions(MeasuredValue length, MeasuredValue width, MeasuredValue height) {
+    public record MeasuredValueLength(BigDecimal value, LengthUnit unit) {
+    }
+
+    public record Dimensions(MeasuredValueLength length, MeasuredValueLength width, MeasuredValueLength height) {
     }
 
     public record Address(String name,
@@ -24,5 +27,13 @@ public record PredictionResponse(
                           String country,
                           String phone,
                           String email) {
+    }
+
+    public enum WeightUnit {
+        kg, lbs
+    }
+
+    public enum LengthUnit {
+        cm, in
     }
 }

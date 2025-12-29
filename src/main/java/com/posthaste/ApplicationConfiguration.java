@@ -5,6 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.victools.jsonschema.generator.Option;
+import com.github.victools.jsonschema.generator.OptionPreset;
+import com.github.victools.jsonschema.generator.SchemaGenerator;
+import com.github.victools.jsonschema.generator.SchemaGeneratorConfigBuilder;
+import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -27,10 +32,19 @@ public class ApplicationConfiguration {
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
         SimpleModule module = new SimpleModule();
         module.addDeserializer(BigDecimal.class, new LenientBigDecimalDeserializer());
         objectMapper.registerModule(module);
         return objectMapper;
+    }
+
+    @Bean
+    public SchemaGenerator schemaGenerator() {
+        SchemaGeneratorConfigBuilder configBuilder =
+                new SchemaGeneratorConfigBuilder(objectMapper(), SchemaVersion.DRAFT_2020_12, OptionPreset.PLAIN_JSON);
+        configBuilder.with(Option.INLINE_ALL_SCHEMAS);
+        return new SchemaGenerator(configBuilder.build());
     }
 
     @Bean
