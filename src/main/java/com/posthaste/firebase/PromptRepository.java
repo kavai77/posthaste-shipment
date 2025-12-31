@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -24,6 +25,7 @@ import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PromptRepository {
     private final FirebaseDatabase firebaseDatabase;
 
@@ -32,7 +34,7 @@ public class PromptRepository {
         reference.child(getHash(prompt.getPrompt())).setValueAsync(prompt);
     }
 
-    public Optional<String> getPrediction(String input) {
+    public Optional<Prompt> getPrediction(String input) {
         DatabaseReference reference = firebaseDatabase.getReference("prompts").child(getHash(input));
         BlockingQueue<Optional<Prompt>> queue = new ArrayBlockingQueue<>(1);
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -42,9 +44,11 @@ public class PromptRepository {
                     try {
                         queue.put(Optional.of(dataSnapshot.getValue(Prompt.class)));
                     } catch (DatabaseException e) {
+                        log.warn("Firebase exception", e);
                         queue.put(Optional.empty());
                     }
                 } catch (InterruptedException e) {
+                    log.error("Interrupted exception", e);
                     throw new RuntimeException(e);
                 }
             }
@@ -52,8 +56,12 @@ public class PromptRepository {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 try {
+                    log.atWarn()
+                            .addKeyValue("databaseError", databaseError)
+                            .log("Firebase cancelled event");
                     queue.put(Optional.empty());
                 } catch (InterruptedException e) {
+                    log.error("Interrupted exception", e);
                     throw new RuntimeException(e);
                 }
             }
@@ -69,8 +77,9 @@ public class PromptRepository {
                 );
             });
 
-            return maybePrompt.map(Prompt::getPrompt);
+            return maybePrompt;
         } catch (InterruptedException e) {
+            log.error("Interrupted exception", e);
             return Optional.empty();
         }
     }
