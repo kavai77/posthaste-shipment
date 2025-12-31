@@ -90,5 +90,6 @@ public class PromptRepository {
         private int accessCount;
         private Date generatedTime;
         private Date lastAccessTime;
+        private String inferenceProvider;
     }
 }

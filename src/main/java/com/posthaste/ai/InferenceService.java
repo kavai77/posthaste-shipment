@@ -3,117 +3,62 @@ package com.posthaste.ai;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.posthaste.firebase.PromptRepository;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Date;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-@Component
 @RequiredArgsConstructor
+@Component
+@Slf4j
 public class InferenceService {
-    public static final String MODEL = "https://api.replicate.com/v1/models/deepseek-ai/deepseek-v3.1/predictions";
+    public static final int BASETEN_INFERENCE_ORDER = 0;
+    public static final int REPLICATE_INFERENCE_ORDER = 1;
 
-    public static final String DATA_PREFIX = "data: ";
-    public static final int MAX_TOKENS = 4092;
-    public static final int MAX_RETRY_COUNT = 3;
+    public static final int MAX_RETRY_COUNT_PER_PROVIDER = 2;
 
-    @Value("${replicate.bearer.auth}")
-    private final String replicateBearerAuth;
     private final ObjectMapper objectMapper;
-    private final String systemPrompt;
     private final PromptRepository promptRepository;
+    private final List<InferenceProvider> inferenceProviders;
 
     public PredictionResponse predict(String input) throws Exception {
         checkArgument(isNotBlank(input));
         checkArgument(input.length() <= 10000);
         Exception lastException = null;
         var savedPrediction = promptRepository.getPrediction(input);
-        for (var retried = 0; retried < MAX_RETRY_COUNT; retried++) {
+        if (savedPrediction.isPresent()) {
             try {
-                boolean returnedFromDb = retried == 0 && savedPrediction.isPresent();
-                String response = returnedFromDb
-                        ? savedPrediction.get()
-                        : generateResponse(input);
+                return objectMapper.readValue(savedPrediction.get(), PredictionResponse.class);
+            } catch (JsonProcessingException e) {
+                log.error("JSON returned from DB cannot be parsed", e);
+            }
+        }
+        for (var retried = 0; retried < inferenceProviders.size() * MAX_RETRY_COUNT_PER_PROVIDER; retried++) {
+            try {
+                var inferenceProvider = inferenceProviders.get(retried % inferenceProviders.size());
+                var response = inferenceProvider.generateResponse(input);
                 PredictionResponse predictionResponse = objectMapper.readValue(response, PredictionResponse.class);
-                if (!returnedFromDb) {
-                    promptRepository.savePrompt(PromptRepository.Prompt.builder()
-                            .prompt(input)
-                            .prediction(objectMapper.writeValueAsString(predictionResponse))
-                            .retryCount(retried)
-                            .generatedTime(new Date())
-                            .lastAccessTime(new Date())
-                            .accessCount(0)
-                            .build());
-                }
+                promptRepository.savePrompt(PromptRepository.Prompt.builder()
+                        .prompt(input)
+                        .prediction(objectMapper.writeValueAsString(predictionResponse))
+                        .retryCount(retried)
+                        .generatedTime(new Date())
+                        .lastAccessTime(new Date())
+                        .accessCount(0)
+                        .inferenceProvider(inferenceProvider.getName())
+                        .build());
                 return predictionResponse;
             } catch (RuntimeException | JsonProcessingException e) {
+                log.warn("JSON parsing error. Retrying...", e);
                 lastException = e;
             }
         }
+        log.error("JSON parsing error. Not retrying anymore.", lastException);
         throw lastException;
-    }
-
-    private String generateResponse(String input) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(replicateBearerAuth);
-
-        HttpEntity<PredictApiRequest> entity = new HttpEntity<>(PredictApiRequest.builder()
-                .input(PredictApiInputRequest.builder()
-                        .prompt(systemPrompt.replace("{{user_prompt}}", input))
-                        .max_tokens(MAX_TOKENS)
-                        .build())
-                .build(), headers);
-        var predictApiResponse = restTemplate.exchange(MODEL, HttpMethod.POST, entity, PredictApiResponse.class);
-        StringBuilder sb = new StringBuilder();
-        try (var httpResponse = restTemplate.execute(predictApiResponse.getBody().urls().stream(), HttpMethod.GET,
-                request -> request.getHeaders().add("Accept", "text/event-stream"),
-                response -> {
-                    String line;
-                    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.getBody()))) {
-                        while (!(line = bufferedReader.readLine()).equals("event: done")) {
-                            if (line.startsWith(DATA_PREFIX)) {
-                                String data = line.substring(DATA_PREFIX.length());
-                                if (!data.isEmpty()) {
-                                    sb.append(data);
-                                }
-                            }
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return response;
-                })) {
-        }
-        var content = sb.toString();
-        var firstBracket = content.indexOf('{');
-        var lastBracket = content.lastIndexOf('}');
-        return content.substring(firstBracket, lastBracket + 1);
-    }
-
-    @Builder
-    public record PredictApiRequest(PredictApiInputRequest input) {
-    }
-
-    @Builder(toBuilder = true)
-    public record PredictApiInputRequest(String prompt, int max_tokens) {
-    }
-
-    public record PredictApiResponse(PredictApiUrlsResponse urls) {
-    }
-
-    public record PredictApiUrlsResponse(String cancel, String get, String stream) {
     }
 }
