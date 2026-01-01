@@ -1,5 +1,6 @@
-package com.posthaste.ai;
+package com.posthaste.ai.inferenceprovider;
 
+import com.posthaste.ai.PredictionResponse;
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.common.ResponseFormat;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
@@ -12,15 +13,15 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
-import static com.posthaste.ai.InferenceService.BASETEN_INFERENCE_ORDER;
+import static com.posthaste.ai.InferenceService.NOVITA_INFERENCE_ORDER;
 
 @Component
 @RequiredArgsConstructor
-@Order(BASETEN_INFERENCE_ORDER)
-public class BasetenOpenAiInferenceService implements InferenceProvider {
+@Order(NOVITA_INFERENCE_ORDER)
+public class NovitaInferenceService implements InferenceProvider {
 
-    @Value("${baseten.api.key}")
-    private final String basetenApiKey;
+    @Value("${novita.api.key}")
+    private final String novitaApiKey;
 
     private ResponseFormat responseFormat;
     private String systemMessage;
@@ -40,12 +41,12 @@ public class BasetenOpenAiInferenceService implements InferenceProvider {
     @Override
     public String generateResponse(String input) {
         var openAI = SimpleOpenAI.builder()
-                .apiKey(basetenApiKey)
-                .baseUrl("https://inference.baseten.co")
+                .apiKey(novitaApiKey)
+                .baseUrl("https://api.novita.ai/openai")
                 .build();
 
         var chatRequest = ChatRequest.builder()
-                .model("deepseek-ai/DeepSeek-V3.2")
+                .model("deepseek/deepseek-v3.2-exp")
                 .message(ChatMessage.SystemMessage.of(systemMessage))
                 .message(ChatMessage.UserMessage.of(input))
                 .responseFormat(responseFormat)
@@ -58,6 +59,6 @@ public class BasetenOpenAiInferenceService implements InferenceProvider {
 
     @Override
     public String getName() {
-        return "BASETEN";
+        return "Novita/DeepSeek-V3.2";
     }
 }

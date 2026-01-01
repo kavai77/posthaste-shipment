@@ -1,6 +1,7 @@
-package com.posthaste.ai;
+package com.posthaste.ai.inferenceprovider;
 
 import com.github.victools.jsonschema.generator.SchemaGenerator;
+import com.posthaste.ai.PredictionResponse;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -88,7 +89,7 @@ public class ReplicateInferenceProvider implements InferenceProvider {
 
     @Override
     public String getName() {
-        return "REPLICATE";
+        return "Replicate/DeepSeek-V3.2";
     }
 
     @Builder

@@ -1,4 +1,4 @@
-package com.posthaste.ai;
+package com.posthaste.ai.inferenceprovider;
 
 public interface InferenceProvider {
     int MAX_TOKENS = 4092;

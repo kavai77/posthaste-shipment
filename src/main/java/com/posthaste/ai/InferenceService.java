@@ -2,6 +2,7 @@ package com.posthaste.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.posthaste.ai.inferenceprovider.InferenceProvider;
 import com.posthaste.firebase.PromptRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @Component
 @Slf4j
 public class InferenceService {
-    public static final int BASETEN_INFERENCE_ORDER = 0;
+    public static final int NOVITA_INFERENCE_ORDER = 0;
     public static final int REPLICATE_INFERENCE_ORDER = 1;
 
     public static final int MAX_RETRY_COUNT_PER_PROVIDER = 2;

@@ -55,3 +55,15 @@ Content-Type: application/pdf
 
 < /Users/4135664/Documents/Commercial-Invoice-Regular.pdf
 --boundary--
+
+### 5. REQUEST CONTAINS PNG only
+POST http://localhost:8080/inference
+#POST https://api.posthaste.pro/shipment/inference
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="file.pdf"
+Content-Type: image/png
+
+< /Users/4135664/Documents/Alza.png
+--boundary--
