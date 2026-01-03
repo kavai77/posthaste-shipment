@@ -15,6 +15,8 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.FirebaseDatabase;
 import com.posthaste.utils.LenientBigDecimalDeserializer;
+import com.shipstation.client.ApiClient;
+import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,11 +28,14 @@ import java.math.BigDecimal;
 
 @Configuration
 public class ApplicationConfiguration {
+    public static final String DEFAULT_CACHE = "default";
+
     @Bean
     public ObjectMapper objectMapper() {
         var objectMapper = new ObjectMapper();
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.registerModule(new JsonNullableModule());
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
         SimpleModule module = new SimpleModule();
@@ -58,5 +63,14 @@ public class ApplicationConfiguration {
 
         var firebaseApp = FirebaseApp.initializeApp(options);
         return FirebaseDatabase.getInstance(firebaseApp);
+    }
+
+    @Bean
+    public ApiClient apiClient(@Value("${shipstation.api.key}") String shipStationApiKey) {
+        ApiClient apiClient = new ApiClient(ApiClient.createDefaultHttpClientBuilder(),
+                objectMapper(), "https://api.shipengine.com");
+        apiClient.setRequestInterceptor(builder -> builder.header("API-Key", shipStationApiKey));
+
+        return apiClient;
     }
 }

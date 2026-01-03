@@ -62,7 +62,7 @@ POST http://localhost:8080/inference
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
-Content-Disposition: form-data; name="file"; filename="file.pdf"
+Content-Disposition: form-data; name="file"; filename="file.png"
 Content-Type: image/png
 
 < /Users/4135664/Documents/Alza.png

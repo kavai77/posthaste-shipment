@@ -1,7 +1,7 @@
 package com.posthaste.ai.inferenceprovider;
 
 import com.github.victools.jsonschema.generator.SchemaGenerator;
-import com.posthaste.ai.PredictionResponse;
+import com.posthaste.model.PosthasteShipment;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -41,7 +41,7 @@ public class ReplicateInferenceProvider implements InferenceProvider {
              var systemPromptStream = getClass().getResourceAsStream("/system-prompt.txt")) {
             var rawSystemPrompt = new String(rawSystemPromptStream.readAllBytes());
             var systemPrompt = new String(systemPromptStream.readAllBytes());
-            var schema = schemaGenerator.generateSchema(PredictionResponse.class).toPrettyString();
+            var schema = schemaGenerator.generateSchema(PosthasteShipment.class).toPrettyString();
             this.systemMessage = rawSystemPrompt
                     .replace("{{json_schema}}", schema)
                     .replace("{{system_prompt}}", systemPrompt);

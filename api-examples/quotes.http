@@ -5,21 +5,21 @@ Content-Type: application/json
 {
   "shipper": {
     "name": "Mr. Smith",
-    "postcode": "11432",
+    "postalCode": "11432",
     "city": "New York",
-    "address": "50-32 154th Street",
-    "state": "NY",
-    "country": "United States",
-    "phone": "",
+    "addressLine1": "50-32 154th Street",
+    "stateProvince": "NY",
+    "countryCode": "US",
+    "phone": "111-222-4444",
     "email": ""
   },
   "recipient": {
     "name": "Csaba Kavai",
-    "postcode": "1101",
+    "postalCode": "1101",
     "city": "Budapest",
-    "address": "Lajos út 12/A 2/4",
-    "state": "",
-    "country": "Hungary",
+    "addressLine1": "Lajos út 12/A 2/4",
+    "stateProvince": "",
+    "countryCode": "HU",
     "phone": "06707028116",
     "email": "test@posthaste.pro"
   },

@@ -1,6 +1,6 @@
 package com.posthaste.ai.inferenceprovider;
 
-import com.posthaste.ai.PredictionResponse;
+import com.posthaste.model.PosthasteShipment;
 import io.github.sashirestela.openai.SimpleOpenAI;
 import io.github.sashirestela.openai.common.ResponseFormat;
 import io.github.sashirestela.openai.domain.chat.ChatMessage;
@@ -31,7 +31,7 @@ public class NovitaInferenceService implements InferenceProvider {
     public void init() {
         this.responseFormat = ResponseFormat.jsonSchema(ResponseFormat.JsonSchema.builder()
                 .name("PredictionResponse")
-                .schemaClass(PredictionResponse.class)
+                .schemaClass(PosthasteShipment.class)
                 .build());
         try (var systemPromptStream = getClass().getResourceAsStream("/system-prompt.txt")) {
             this.systemMessage = new String(systemPromptStream.readAllBytes());

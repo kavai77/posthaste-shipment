@@ -19,8 +19,7 @@ public class ImageFileResolver implements MultipartFileResolver {
             return null;
         }
         try {
-            String response = ocrInferenceService.generateResponse(file.getBytes(), file.getContentType());
-            return response;
+            return ocrInferenceService.generateResponse(file.getBytes(), file.getContentType());
         } catch (IOException e) {
             return null;
         }

@@ -1,8 +1,11 @@
-package com.posthaste.ai;
+package com.posthaste.model;
+
+import lombok.Builder;
 
 import java.math.BigDecimal;
 
-public record PredictionResponse(
+@Builder
+public record PosthasteShipment(
         Address shipper,
         Address recipient,
         MeasuredValueWeight weight,
@@ -10,21 +13,28 @@ public record PredictionResponse(
         String item,
         Integer quantity,
         BigDecimal value) {
+    @Builder
     public record MeasuredValueWeight(BigDecimal value, WeightUnit unit) {
     }
 
+    @Builder
     public record MeasuredValueLength(BigDecimal value, LengthUnit unit) {
     }
 
+    @Builder
     public record Dimensions(MeasuredValueLength length, MeasuredValueLength width, MeasuredValueLength height) {
     }
 
+    @Builder
     public record Address(String name,
-                          String postcode,
+                          String companyName,
+                          String postalCode,
                           String city,
-                          String address,
-                          String state,
-                          String country,
+                          String addressLine1,
+                          String addressLine2,
+                          String addressLine3,
+                          String stateProvince,
+                          String countryCode,
                           String phone,
                           String email) {
     }

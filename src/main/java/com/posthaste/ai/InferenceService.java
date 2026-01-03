@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.posthaste.ai.inferenceprovider.InferenceProvider;
 import com.posthaste.firebase.PromptRepository;
+import com.posthaste.model.PosthasteShipment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -37,7 +38,7 @@ public class InferenceService {
         preferredProvider = inferenceProviders.getFirst().getName();
     }
 
-    public PredictionResponse predict(String input) throws Exception {
+    public PosthasteShipment predict(String input) throws Exception {
         checkArgument(isNotBlank(input));
         checkArgument(input.length() <= 10000);
         Exception lastException = null;
@@ -46,7 +47,7 @@ public class InferenceService {
                 && preferredProvider.equals(savedPrediction.get().getInferenceProvider())
                 && Duration.between(savedPrediction.get().getGeneratedTime().toInstant(), Instant.now()).toDays() < PREDICTION_CACHE_TIMOUT_DAYS) {
             try {
-                return objectMapper.readValue(savedPrediction.get().getPrediction(), PredictionResponse.class);
+                return objectMapper.readValue(savedPrediction.get().getPrediction(), PosthasteShipment.class);
             } catch (JsonProcessingException e) {
                 log.error("JSON returned from DB cannot be parsed", e);
             }
@@ -55,7 +56,7 @@ public class InferenceService {
             try {
                 var inferenceProvider = inferenceProviders.get(retried % inferenceProviders.size());
                 var response = inferenceProvider.generateResponse(input);
-                PredictionResponse predictionResponse = objectMapper.readValue(response, PredictionResponse.class);
+                PosthasteShipment predictionResponse = objectMapper.readValue(response, PosthasteShipment.class);
                 promptRepository.savePrompt(PromptRepository.Prompt.builder()
                         .prompt(input)
                         .prediction(objectMapper.writeValueAsString(predictionResponse))

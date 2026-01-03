@@ -1,6 +1,7 @@
 package com.posthaste.ai;
 
 import com.posthaste.ai.multipartfile.MultipartFileResolver;
+import com.posthaste.model.PosthasteShipment;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.MediaType;
@@ -32,7 +33,7 @@ public class InferenceEndpoint {
 
     @PostMapping(value = "/inference", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @SneakyThrows
-    public PredictionResponse inference(
+    public PosthasteShipment inference(
             @RequestParam(value = "prompt", required = false) String prompt,
             @RequestParam(value = "file", required = false) MultipartFile file) {
         String input = Stream.concat(
