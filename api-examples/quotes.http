@@ -1,5 +1,5 @@
-#POST https://api.posthaste.pro/shipment/quotes
 POST http://localhost:8080/quotes
+#POST https://api.posthaste.pro/shipment/quotes
 Content-Type: application/json
 
 {
@@ -23,25 +23,28 @@ Content-Type: application/json
     "phone": "06707028116",
     "email": "test@posthaste.pro"
   },
-  "weight": {
-    "value": 2.5,
-    "unit": "kg"
-  },
-  "dimensions": {
-    "length": {
-      "value": 30,
-      "unit": "cm"
-    },
-    "width": {
-      "value": 20,
-      "unit": "cm"
-    },
-    "height": {
-      "value": 10,
-      "unit": "cm"
+  "packages": [
+    {
+      "weight": {
+        "value": 2.5,
+        "unit": "kg"
+      },
+      "dimensions": {
+        "length": 11,
+        "width": 8,
+        "height": 15,
+        "unit": "cm"
+      }
     }
-  },
-  "item": "laptop and a charger",
-  "value": 1000,
-  "quantity": 1
+  ],
+  "commodities": [
+    {
+      "description": "laptop and a charger",
+      "quantity": 1,
+      "harmonizedTariffCode": "999999",
+      "countryOfOrigin": "US",
+      "value": 1800,
+      "valueCurrency": "EUR"
+    }
+  ]
 }

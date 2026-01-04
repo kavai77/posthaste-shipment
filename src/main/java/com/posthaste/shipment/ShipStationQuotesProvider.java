@@ -3,22 +3,21 @@ package com.posthaste.shipment;
 import com.posthaste.model.PosthasteShipment;
 import com.shipstation.client.ApiClient;
 import com.shipstation.client.api.RatesApi;
-import com.shipstation.client.model.AddressResidentialIndicator;
 import com.shipstation.client.model.AddressValidatingShipment;
 import com.shipstation.client.model.CalculateRatesRequestBody;
-import com.shipstation.client.model.ModelPackage;
+import com.shipstation.client.model.InternationalShipmentOptions;
+import com.shipstation.client.model.NonDelivery;
+import com.shipstation.client.model.PackageContents;
 import com.shipstation.client.model.RateRequestBody;
-import com.shipstation.client.model.ShippingAddress;
-import com.shipstation.client.model.ShippingAddressTo;
 import com.shipstation.client.model.ValidateAddress;
-import com.shipstation.client.model.Weight;
-import com.shipstation.client.model.WeightUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static com.posthaste.shipment.ShipStationMapper.INSTANCE;
 
 
 @Component
@@ -49,10 +48,12 @@ public class ShipStationQuotesProvider implements QuotesProvider {
                         .postalCode("20500")
                         .countryCode("US")
                         .build())
-                .weight(PosthasteShipment.MeasuredValueWeight.builder()
-                        .value(BigDecimal.ONE)
-                        .unit(PosthasteShipment.WeightUnit.lbs)
-                        .build())
+                .packages(List.of(PosthasteShipment.Package.builder()
+                        .weight(PosthasteShipment.Weight.builder()
+                                .value(BigDecimal.ONE)
+                                .unit(PosthasteShipment.WeightUnit.lbs)
+                                .build())
+                        .build()))
                 .build());
     }
 
@@ -68,41 +69,13 @@ public class ShipStationQuotesProvider implements QuotesProvider {
                         .preferredCurrency("USD"))
                 .shipment(new AddressValidatingShipment()
                         .validateAddress(ValidateAddress.NO_VALIDATION)
-                        .shipFrom(new ShippingAddress()
-                                .name(quotesRequest.shipper().name())
-                                .phone(quotesRequest.shipper().phone())
-                                .email(quotesRequest.shipper().email())
-                                .companyName(quotesRequest.shipper().companyName())
-                                .addressLine1(quotesRequest.shipper().addressLine1())
-                                .addressLine2(quotesRequest.shipper().addressLine2())
-                                .addressLine3(quotesRequest.shipper().addressLine3())
-                                .cityLocality(quotesRequest.shipper().city())
-                                .stateProvince(quotesRequest.shipper().stateProvince())
-                                .postalCode(quotesRequest.shipper().postalCode())
-                                .countryCode(quotesRequest.shipper().countryCode())
-                                .addressResidentialIndicator(AddressResidentialIndicator.NO))
-                        .shipTo(new ShippingAddressTo()
-                                .name(quotesRequest.recipient().name())
-                                .phone(quotesRequest.recipient().phone())
-                                .email(quotesRequest.recipient().email())
-                                .companyName(quotesRequest.recipient().companyName())
-                                .addressLine1(quotesRequest.recipient().addressLine1())
-                                .addressLine2(quotesRequest.recipient().addressLine2())
-                                .addressLine3(quotesRequest.recipient().addressLine3())
-                                .cityLocality(quotesRequest.recipient().city())
-                                .stateProvince(quotesRequest.recipient().stateProvince())
-                                .postalCode(quotesRequest.recipient().postalCode())
-                                .countryCode(quotesRequest.recipient().countryCode())
-                                .addressResidentialIndicator(AddressResidentialIndicator.NO))
-                        .packages(List.of(new ModelPackage()
-                                .packageCode("package")
-                                .weight(new Weight()
-                                        .value(quotesRequest.weight().value())
-                                        .unit(quotesRequest.weight().unit() == null
-                                                ? WeightUnit.POUND : switch (quotesRequest.weight().unit()) {
-                                            case kg -> WeightUnit.KILOGRAM;
-                                            case lbs -> WeightUnit.POUND;
-                                        }))))));
+                        .shipFrom(INSTANCE.shippingAddressFrom(quotesRequest.shipper()))
+                        .shipTo(INSTANCE.shippingAddressTo(quotesRequest.recipient()))
+                        .packages(INSTANCE.packages(quotesRequest.packages()))
+                        .customs(new InternationalShipmentOptions()
+                                .contents(PackageContents.MERCHANDISE)
+                                .nonDelivery(NonDelivery.TREAT_AS_ABANDONED)
+                                .customsItems(INSTANCE.customsItems(quotesRequest.commodities())))));
 
         return response.getRateResponse();
     }

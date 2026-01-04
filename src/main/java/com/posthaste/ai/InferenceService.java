@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -42,16 +40,6 @@ public class InferenceService {
         checkArgument(isNotBlank(input));
         checkArgument(input.length() <= 10000);
         Exception lastException = null;
-        var savedPrediction = promptRepository.getPrediction(input);
-        if (savedPrediction.isPresent()
-                && preferredProvider.equals(savedPrediction.get().getInferenceProvider())
-                && Duration.between(savedPrediction.get().getGeneratedTime().toInstant(), Instant.now()).toDays() < PREDICTION_CACHE_TIMOUT_DAYS) {
-            try {
-                return objectMapper.readValue(savedPrediction.get().getPrediction(), PosthasteShipment.class);
-            } catch (JsonProcessingException e) {
-                log.error("JSON returned from DB cannot be parsed", e);
-            }
-        }
         for (var retried = 0; retried < inferenceProviders.size() * MAX_RETRY_COUNT_PER_PROVIDER; retried++) {
             try {
                 var inferenceProvider = inferenceProviders.get(retried % inferenceProviders.size());

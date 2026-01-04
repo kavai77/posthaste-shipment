@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
@@ -29,15 +28,15 @@ public class EasyPostQuotesProvider implements QuotesProvider {
         var toAddressMap = createAddressMap(quotesRequest.recipient());
 
         var parcelMap = new HashMap<String, Object>();
-        parcelMap.put("length", getDimension(quotesRequest, PosthasteShipment.Dimensions::length));
-        parcelMap.put("width", getDimension(quotesRequest, PosthasteShipment.Dimensions::width));
-        parcelMap.put("height", getDimension(quotesRequest, PosthasteShipment.Dimensions::height));
-        parcelMap.put("weight", getMeasuredValue(quotesRequest.weight()));
+        parcelMap.put("length", Optional.ofNullable(quotesRequest.packages().getFirst().dimensions()).map(PosthasteShipment.Dimensions::length).map(BigDecimal::floatValue).orElse(null));
+        parcelMap.put("width", Optional.ofNullable(quotesRequest.packages().getFirst().dimensions()).map(PosthasteShipment.Dimensions::width).map(BigDecimal::floatValue).orElse(null));
+        parcelMap.put("height", Optional.ofNullable(quotesRequest.packages().getFirst().dimensions()).map(PosthasteShipment.Dimensions::height).map(BigDecimal::floatValue).orElse(null));
+        parcelMap.put("weight", Optional.ofNullable(quotesRequest.packages().getFirst().weight()).map(PosthasteShipment.Weight::value).map(BigDecimal::floatValue).orElse(null));
         var customsItemMap = new HashMap<String, Object>();
-        customsItemMap.put("description", quotesRequest.item());
-        customsItemMap.put("weight", getMeasuredValue(quotesRequest.weight()));
-        customsItemMap.put("quantity", Optional.ofNullable(quotesRequest.quantity()).orElse(1));
-        customsItemMap.put("value", Optional.ofNullable(quotesRequest.value()).orElse(BigDecimal.ONE));
+        customsItemMap.put("description", quotesRequest.commodities().getFirst().description());
+        customsItemMap.put("weight", Optional.ofNullable(quotesRequest.packages().getFirst().weight()).map(PosthasteShipment.Weight::value).map(BigDecimal::floatValue).orElse(null));
+        customsItemMap.put("quantity", Optional.ofNullable(quotesRequest.commodities().getFirst().quantity()).orElse(1));
+        customsItemMap.put("value", Optional.ofNullable(quotesRequest.commodities().getFirst().value()).orElse(BigDecimal.ONE));
         var customsItem = client.customsItem.create(customsItemMap);
 
         var customsInfoMap = new HashMap<String, Object>();
@@ -68,17 +67,5 @@ public class EasyPostQuotesProvider implements QuotesProvider {
         addressMap.put("phone", address.phone());
         addressMap.put("email", address.email());
         return addressMap;
-    }
-
-    private Float getDimension(PosthasteShipment quotesRequest, Function<PosthasteShipment.Dimensions, PosthasteShipment.MeasuredValueLength> function) {
-        if (quotesRequest.dimensions() == null) {
-            return null;
-        }
-        var measuredValue = function.apply(quotesRequest.dimensions());
-        return measuredValue != null && measuredValue.value() != null ? measuredValue.value().floatValue() : null;
-    }
-
-    private Float getMeasuredValue(PosthasteShipment.MeasuredValueWeight measuredValue) {
-        return measuredValue != null && measuredValue.value() != null ? measuredValue.value().floatValue() : null;
     }
 }

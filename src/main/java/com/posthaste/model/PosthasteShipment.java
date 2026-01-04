@@ -3,26 +3,25 @@ package com.posthaste.model;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Builder
 public record PosthasteShipment(
         Address shipper,
         Address recipient,
-        MeasuredValueWeight weight,
-        Dimensions dimensions,
-        String item,
-        Integer quantity,
-        BigDecimal value) {
+        List<Package> packages,
+        List<Commodity> commodities) {
+
     @Builder
-    public record MeasuredValueWeight(BigDecimal value, WeightUnit unit) {
+    public record Package(Weight weight, Dimensions dimensions) {
     }
 
     @Builder
-    public record MeasuredValueLength(BigDecimal value, LengthUnit unit) {
+    public record Weight(BigDecimal value, WeightUnit unit) {
     }
 
     @Builder
-    public record Dimensions(MeasuredValueLength length, MeasuredValueLength width, MeasuredValueLength height) {
+    public record Dimensions(BigDecimal length, BigDecimal width, BigDecimal height, DimensionUnit unit) {
     }
 
     @Builder
@@ -39,11 +38,22 @@ public record PosthasteShipment(
                           String email) {
     }
 
+    @Builder
+    public record Commodity(
+            String harmonizedTariffCode,
+            Integer quantity,
+            String description,
+            BigDecimal value,
+            String valueCurrency,
+            String countryOfOrigin
+    ) {
+    }
+
     public enum WeightUnit {
         kg, lbs
     }
 
-    public enum LengthUnit {
+    public enum DimensionUnit {
         cm, in
     }
 }
